@@ -1,0 +1,27 @@
+---
+ - hosts: all
+   tasks:
+   - name: install pptpd
+     sudo: yes
+     apt: name=pptpd state=present
+   - name: copy iptables.sh
+     copy: src=
+   - name: copy pptpd.conf
+     sudo: yes
+     copy: src=config/pptpd.conf dest=/etc/pptpd.conf
+   - name: copy chap-secrets
+     sudo: yes
+     copy: src=config/chap-secrets dest=/etc/ppp/chap-secrets
+   - name: copy pptpd-options
+     sudo: yes
+     copy: src=config/pptpd-options dest=/etc/ppp/pptpd-options
+   - name: restart service
+     sudo: yes
+     service: name=pptpd state=restarted
+   - name: setup iptables
+     sudo: yes
+     command: /sbin/iptables -t nat -F &&
+              /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+   - name: ip forwarding
+     sudo: yes
+     command: echo "1" > /proc/sys/net/ipv4/ip_forward
